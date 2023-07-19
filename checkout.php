@@ -15,6 +15,7 @@
 
     if(isset($_POST['submit']))
     {
+
         if(isset($_POST['first_name'],$_POST['last_name'],$_POST['email'],$_POST['address'],$_POST['country'],$_POST['state'],$_POST['zipcode']) && !empty($_POST['first_name']) && !empty($_POST['last_name']) && !empty($_POST['email']) && !empty($_POST['address']) && !empty($_POST['country']) && !empty($_POST['state']) && !empty($_POST['zipcode']))
         {
            $firstName = $_POST['first_name'];
@@ -25,8 +26,6 @@
            }
            else
            {
-               //validate_input is a custom function
-               //you can find it in helpers.php file
                 $firstName  = validate_input($_POST['first_name']);
                 $lastName   = validate_input($_POST['last_name']);
                 $email      = validate_input($_POST['email']);
@@ -53,6 +52,9 @@
                 ];
 
                 $statement->execute($params);
+
+                pay($_POST);
+
                 if($statement->rowCount() == 1)
                 {
                     
@@ -83,13 +85,12 @@
                         $updateSql = 'update orders set total_price = :total where id = :id';
 
                         $rs = $db->prepare($updateSql);
-                        $prepareUpdate = [
+                        $pcheckoutrepareUpdate = [
                             'total' => $totalPrice,
                             'id' =>$getOrderID
                         ];
 
                         $rs->execute($prepareUpdate);
-                        
                         unset($_SESSION['cart_items']);
                         $_SESSION['confirm_order'] = true;
                         header('location:thank-you.php');
@@ -160,16 +161,6 @@
                 $stateValue = $_POST['state'];
             }
 
-            if(!isset($_POST['zipcode']) || empty($_POST['zipcode']))
-            {
-                $errorMsg[] = 'Zipcode is required';
-            }
-            else
-            {
-                $zipCodeValue = $_POST['zipcode'];
-            }
-
-
             if(isset($_POST['address2']) || !empty($_POST['address2']))
             {
                 $address2Value = $_POST['address2'];
@@ -178,8 +169,8 @@
         }
     }
 	
-	$pageTitle = 'Demo PHP Shopping cart checkout page with Validation';
-	$metaDesc = 'Demo PHP Shopping cart checkout page with Validation';
+	$pageTitle = 'checkout page with Validation';
+	$metaDesc = 'checkout page with Validation';
 	
     include('layouts/header.php');
 ?>
@@ -256,14 +247,14 @@
                 <label for="country">Country</label>
                 <select class="custom-select d-block w-100" name="country" id="country" >
                   <option value="">Choose...</option>
-                  <option value="United States" >Saudi Arabia</option>
+                  <option value="SA" >Saudi Arabia</option>
                 </select>
               </div>
               <div class="col-md-4 mb-3">
                 <label for="state">State</label>
                 <select class="custom-select d-block w-100" name="state" id="state" >
                   <option value="">Choose...</option>
-                  <option value="California">Riyadh</option>
+                  <option value="Riyadh">Riyadh</option>
                 </select>
               </div>
               <div class="col-md-3 mb-3">
@@ -277,7 +268,7 @@
 
             <div class="d-block my-3">
               <div class="custom-control ">
-                <input id="cashOnDelivery" name="payment_type" type="radio" >
+                <input id="cashOnDelivery" name="payment_type" type="radio" value='cash' >
                 <label class="" for="cashOnDelivery">Cash on Delivery</label>
 
 
@@ -288,7 +279,7 @@
             <div class="d-block my-3">
               <div class="custom-control">
 
-               <input id="paytabsButton" name="payment_type" type="radio" " checked="" >
+               <input id="paytabsButton" name="payment_type" type="radio"  checked="" value='paytabs'>
                 <label class="" for="paytabsButton">Paytabs</label>
                 </div>
             </div>
